@@ -21,7 +21,7 @@ public class Wallet {
     @Column(name = "secret_key", nullable = false, updatable = false)
     private String secretKey;
 
-    @Column(name = "count", nullable = true)
+    @Column(name = "count", nullable = false)
     private Double count;
 
     public void setCount(Double value) {
