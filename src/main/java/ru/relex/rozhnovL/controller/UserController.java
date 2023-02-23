@@ -2,9 +2,9 @@ package ru.relex.rozhnovL.controller;
 
 import generator.Generator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.CurrencyEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.relex.rozhnovL.entity.Curse;
 import ru.relex.rozhnovL.requests.RegistrationRequest;
 import ru.relex.rozhnovL.requests.topUpRequest;
 import ru.relex.rozhnovL.Services;
@@ -104,16 +104,39 @@ public class UserController {
         return changeWalletBalance(wallet, -count);
     }
 
-    /*
-    @PostMapping("/curse/change")
-    public String changeCurse(@RequestBody String request) {
 
+    @GetMapping("/curse")
+    public String checkCurse(@RequestParam(name = "secret_key") String secretKey,
+                             @RequestParam(name = "currency") String curCurrency) {
+        Long currencyId = services.currencyService.getByName(curCurrency).getId();
+        List<Curse> curses = services.curseService.getByCurrencyId(currencyId);
+
+        return cursesToString(curses, currencyId);
     }
-*/
 
 
 
+    private String cursesToString(List<Curse> curses, long currencyId) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
 
+        for (Curse curse : curses) {
+            String currencyName = services.currencyService.getById(curse.getCurrencyIdTo()).getName();
+            sb.append('"');
+            sb.append(currencyName);
+
+            sb.append("\": \"");
+            if (curse.getCurrencyIdFrom().equals(currencyId)) {
+                sb.append(curse.getCount());
+            } else {
+                double count = 1.0 / curse.getCount();
+                sb.append((float)((int)(count * 10000) / 10000));
+            }
+            sb.append("\",\n");
+        }
+        sb.append('}');
+        return sb.toString();
+    }
     private String walletsToString(List<Wallet> wallets) {
         StringBuilder sb = new StringBuilder();
         sb.append('{');
