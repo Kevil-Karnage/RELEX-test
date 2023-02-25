@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface CurseService {
     List<Curse> getByCurrencyId(long currencyId);
+    Curse getByCurrenciesIds(long currencyIdFrom, long currencyIdTo);
 }

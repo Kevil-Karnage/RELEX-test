@@ -9,7 +9,10 @@ import java.util.List;
 
 @Repository
 public interface CurseRepository extends JpaRepository<Curse, Long> {
-
     @Query("SELECT C FROM Curse C where C.currencyIdFrom=:currencyId OR C.currencyIdTo=:currencyId")
     List<Curse> getByCurrencyId(long currencyId);
+    @Query("SELECT C FROM Curse C where " +
+            "(C.currencyIdFrom=:currencyIdFrom AND C.currencyIdTo=:currencyIdTo) OR " +
+            "(C.currencyIdFrom=:currencyIdTo AND C.currencyIdTo=:currencyIdFrom)")
+    Curse getByCurrenciesIds(long currencyIdFrom, long currencyIdTo);
 }

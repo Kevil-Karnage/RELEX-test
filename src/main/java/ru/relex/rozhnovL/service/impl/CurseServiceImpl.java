@@ -18,4 +18,9 @@ public class CurseServiceImpl implements CurseService {
     public List<Curse> getByCurrencyId(long currencyId) {
         return repository.getByCurrencyId(currencyId);
     }
+
+    @Override
+    public Curse getByCurrenciesIds(long currencyIdFrom, long currencyIdTo) {
+        return repository.getByCurrenciesIds(currencyIdFrom, currencyIdTo);
+    }
 }

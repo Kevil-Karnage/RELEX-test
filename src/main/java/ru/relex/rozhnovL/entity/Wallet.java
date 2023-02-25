@@ -13,7 +13,10 @@ public class Wallet {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-//    @Id
+    //    @Id
+    @Column(name = "secret_key", nullable = false, updatable = false)
+    private String secretKey;
+    //    @Id
     @Column(name = "currency_id", nullable = false, updatable = false)
     private Long currencyId;
 
@@ -23,6 +26,15 @@ public class Wallet {
 
     @Column(name = "count", nullable = false)
     private Double count;
+
+    public Wallet(String secretKey, Long currencyId, Double count) {
+        this.secretKey = secretKey;
+        this.currencyId = currencyId;
+        this.count = count;
+    }
+
+    public Wallet() {
+    }
 
     public void setCount(Double value) {
         this.count = value;
