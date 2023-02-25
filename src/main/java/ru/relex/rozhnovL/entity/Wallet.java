@@ -20,9 +20,6 @@ public class Wallet {
     @Column(name = "currency_id", nullable = false, updatable = false)
     private Long currencyId;
 
-//    @Id
-    @Column(name = "secret_key", nullable = false, updatable = false)
-    private String secretKey;
 
     @Column(name = "count", nullable = false)
     private Double count;
