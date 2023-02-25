@@ -12,8 +12,9 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
     @Query("SELECT w from Wallet w where w.secretKey = :secretKey")
     List<Wallet> getAllBySecretKey(String secretKey);
 
+    @Query("SELECT w from Wallet w where w.currencyId = :currencyId")
+    List<Wallet> getAllByCurrencyId(Long currencyId);
+
     @Query("SELECT w from Wallet w where w.secretKey = :secretKey and w.currencyId=:currencyId")
     Wallet getBySecretKeyAndCurrencyId(String secretKey, long currencyId);
-
-
 }

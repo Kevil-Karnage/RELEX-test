@@ -14,4 +14,6 @@ public interface WalletService {
 
     Wallet getBySecretKeyAndCurrencyId(String secretKey, long currencyId);
 
+    List<Wallet> getAllByCurrencyId(Long currencyId);
+
 }

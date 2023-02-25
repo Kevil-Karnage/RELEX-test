@@ -1,11 +1,13 @@
 package ru.relex.rozhnovL.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
+@Getter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

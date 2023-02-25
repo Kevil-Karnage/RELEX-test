@@ -8,13 +8,16 @@ import ru.relex.rozhnovL.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
-
     @Autowired
     private UserRepository repository;
-
 
     @Override
     public User saveUser(User user) {
         return repository.saveAndFlush(user);
+    }
+
+    @Override
+    public User getBySecretKey(String secretKey) {
+        return repository.getBySecretKey(secretKey);
     }
 }

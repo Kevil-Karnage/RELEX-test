@@ -33,4 +33,9 @@ public class WalletServiceImpl implements WalletService {
     public Wallet getBySecretKeyAndCurrencyId(String secretKey, long currencyId) {
         return repository.getBySecretKeyAndCurrencyId(secretKey, currencyId);
     }
+
+    @Override
+    public List<Wallet> getAllByCurrencyId(Long currencyId) {
+        return repository.getAllByCurrencyId(currencyId);
+    }
 }
