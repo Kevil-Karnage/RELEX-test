@@ -8,23 +8,23 @@ import ru.relex.rozhnovL.service.WalletService;
 
 public class Services {
     @Autowired
-    public CurrencyService currencyService;
+    public CurrencyService currency;
     @Autowired
-    public CurseService curseService;
+    public CurseService curse;
     @Autowired
-    public UserService userService;
+    public UserService user;
     @Autowired
-    public WalletService walletService;
+    public WalletService wallet;
 
     public Services(
-            CurrencyService currencyService,
-            CurseService curseService,
-            UserService userService,
-            WalletService walletService) {
-        this.currencyService = currencyService;
-        this.curseService = curseService;
-        this.userService = userService;
-        this.walletService = walletService;
+            CurrencyService currency,
+            CurseService curse,
+            UserService user,
+            WalletService wallet) {
+        this.currency = currency;
+        this.curse = curse;
+        this.user = user;
+        this.wallet = wallet;
     }
 }
 
