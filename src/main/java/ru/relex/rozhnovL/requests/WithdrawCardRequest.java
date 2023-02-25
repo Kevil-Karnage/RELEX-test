@@ -1,6 +1,6 @@
 package ru.relex.rozhnovL.requests;
 
-public class withdrawCardRequest {
+public class WithdrawCardRequest {
     public String secret_key;
     public String currency;
     public String count;
