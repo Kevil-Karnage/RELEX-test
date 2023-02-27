@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface WalletService {
 
-    Wallet saveWallet(Wallet wallet);
+    Wallet save(Wallet wallet);
 
     List<Wallet> getAllBySecretKey(String secretKey);
 

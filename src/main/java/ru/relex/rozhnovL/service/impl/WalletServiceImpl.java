@@ -15,7 +15,7 @@ public class WalletServiceImpl implements WalletService {
     private WalletRepository repository;
 
     @Override
-    public Wallet saveWallet(Wallet wallet) {
+    public Wallet save(Wallet wallet) {
         return repository.saveAndFlush(wallet);
     }
 

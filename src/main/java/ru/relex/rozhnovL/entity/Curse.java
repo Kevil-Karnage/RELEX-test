@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Entity
 @Table(name = "curses")
+
 @Getter
 public class Curse {
 

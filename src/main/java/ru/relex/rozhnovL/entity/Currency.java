@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Entity
 @Table(name = "currency")
+
 @Getter
 public class Currency {
     @Id

@@ -6,6 +6,7 @@ import lombok.Getter;
 @Entity
 @Table(name = "wallets")
 //@IdClass(WalletId.class)
+
 @Getter
 public class Wallet {
 

@@ -4,12 +4,10 @@ import generator.Generator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.relex.rozhnovL.entity.Curse;
 import ru.relex.rozhnovL.requests.*;
 import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.User;
 
-import java.util.List;
 
 @RestController
 public class UserController {
@@ -30,7 +28,7 @@ public class UserController {
         String secretKey = Generator.generateSecretKey(request.username, request.email);
 
         User newUser = new User(request.username, request.email, secretKey, false);
-        services.user.saveUser(newUser);
+        services.user.save(newUser);
         return "{ \"secret_key\": \"" + secretKey + "\"}";
     }
 

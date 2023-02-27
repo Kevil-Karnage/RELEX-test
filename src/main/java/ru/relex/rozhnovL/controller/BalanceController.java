@@ -117,7 +117,7 @@ public class BalanceController {
         // кладём сумму на кошелёк 2-ой валюты (и соЗдаем его, если до этого не соЗдавался)
         Wallet walletTo = services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyIdTo);
         if (walletTo == null) {
-            services.wallet.saveWallet(new Wallet(request.secret_key, currencyIdTo, countTo));
+            services.wallet.save(new Wallet(request.secret_key, currencyIdTo, countTo));
             return "{ \"" + request.currency_to + "_wallet\": \"" + countTo + "\"}";
         } else {
             return changeWalletBalance(walletTo, countTo);
@@ -147,7 +147,7 @@ public class BalanceController {
 
     private String changeWalletBalance(Wallet wallet, double count) {
         wallet.setCount(wallet.getCount() + count);
-        services.wallet.saveWallet(wallet);
+        services.wallet.save(wallet);
 
         Currency currency = services.currency.getById(wallet.getCurrencyId());
         return "{ \"" + currency.getName() + "_wallet\": \"" + wallet.getCount() + "\"}";
