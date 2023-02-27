@@ -34,4 +34,28 @@ public class AdminController {
 
         return "{\n\"" + currencyName + "\": \"" + sum + "\"\n}";
     }
+
+    @GetMapping("/transactions/count")
+    public String getCountTransactions(@RequestParam(name = "secret_key") String secretKey,
+                                       @RequestParam(name = "date_from") String stringDateFrom,
+                                       @RequestParam(name = "date_to") String stringDateTo) {
+        if (!services.user.getBySecretKey(secretKey).isAdmin())
+            return new BadResponse("Access denied").toString();
+
+        Date dateFrom;
+        Date dateTo;
+
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+        try {
+            dateFrom = format.parse(stringDateFrom);
+            dateTo = format.parse(stringDateTo);
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+        int count = services.transaction.getCountBetweenDates(dateFrom, dateTo);
+
+        return "{\n \"transaction_count\": \"" + count + "\"\n}";
+    }
 }
