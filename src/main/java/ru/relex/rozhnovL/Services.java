@@ -1,10 +1,7 @@
 package ru.relex.rozhnovL;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.relex.rozhnovL.service.CurrencyService;
-import ru.relex.rozhnovL.service.CurseService;
-import ru.relex.rozhnovL.service.UserService;
-import ru.relex.rozhnovL.service.WalletService;
+import ru.relex.rozhnovL.service.*;
 
 public class Services {
     @Autowired

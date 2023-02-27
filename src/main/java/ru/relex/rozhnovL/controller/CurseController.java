@@ -15,18 +15,19 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/curse")
 public class CurseController {
 
     @Autowired
     Services services;
 
     /**
-     * (ALL) Check Curses
+     * (ALL) Curses Check
      * @param secretKey
      * @param currency
      * @return
      */
-    @GetMapping("/curse")
+    @GetMapping("")
     public String checkCurse(@RequestParam(name = "secret_key") String secretKey,
                              @RequestParam(name = "currency") String currency) {
         Long currencyId = services.currency.getByName(currency).getId();
@@ -35,14 +36,19 @@ public class CurseController {
         return cursesToString(curses, currencyId);
     }
 
-    @PostMapping("/curse/change")
+    /**
+     * (ADMIN) Curses Change
+     * @param json
+     * @return
+     */
+    @PostMapping("/change")
     public String changeCurses(@RequestBody String json) {
         ChangeCurseRequest request = parseJsonToChangeCurseRequest(json);
-        if (request == null) return "{\"response\": \"bad request\"}";
+        if (request == null)
+            return new BadResponse("bad request").toString();
 
-        if (!services.user.getBySecretKey(request.secret_key).isAdmin()) {
+        if (!services.user.getBySecretKey(request.secret_key).isAdmin())
             return new BadResponse("Access denied").toString();
-        }
 
         List<Curse> curses = new ArrayList<>();
         Long baseCurrencyId = services.currency.getByName(request.base_currency).getId();
@@ -61,6 +67,7 @@ public class CurseController {
     }
 
 
+
     private ChangeCurseRequest parseJsonToChangeCurseRequest(String json) {
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> map;
@@ -69,7 +76,6 @@ public class CurseController {
         } catch (JsonProcessingException e) {
             return null;
         }
-
 
         ChangeCurseRequest request = new ChangeCurseRequest();
         request.secret_key = map.remove("secret_key");

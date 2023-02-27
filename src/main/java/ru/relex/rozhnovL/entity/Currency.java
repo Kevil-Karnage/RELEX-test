@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class Currency {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
 
     @Column(name = "name", updatable = false, nullable = false)

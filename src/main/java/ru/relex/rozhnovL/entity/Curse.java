@@ -10,7 +10,7 @@ import lombok.Getter;
 public class Curse {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
 
     @Column(name = "currency_id_from", nullable = false)

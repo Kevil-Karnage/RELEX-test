@@ -10,6 +10,7 @@ import ru.relex.rozhnovL.requests.ExchangeCurrencyRequest;
 import ru.relex.rozhnovL.requests.TopUpRequest;
 import ru.relex.rozhnovL.requests.WithdrawCardRequest;
 import ru.relex.rozhnovL.requests.WithdrawWalletRequest;
+import ru.relex.rozhnovL.responses.BadResponse;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class BalanceController {
      * @param secretKey
      * @return
      */
-    @GetMapping("/")
+    @GetMapping("")
     public String getBalance(@RequestParam(name = "secretKey") String secretKey) {
         List<Wallet> wallets = services.wallet.getAllBySecretKey(secretKey);
 
@@ -41,6 +42,11 @@ public class BalanceController {
     public String topUp(@RequestBody TopUpRequest request) {
         System.out.println(request);
         Wallet wallet = services.wallet.getMainBySecretKey(request.secret_key);
+        double count = Double.parseDouble(request.RUB_wallet);
+
+        if (wallet == null) {
+            wallet = new Wallet(request.secret_key, services.currency.getByName("RUB").getId(), count);
+        }
 
         return changeWalletBalance(wallet, Double.parseDouble(request.RUB_wallet));
     }
@@ -96,10 +102,10 @@ public class BalanceController {
         Long currencyIdTo = services.currency.getByName(request.currency_to).getId();
         Double countFrom = Double.parseDouble(request.amount);
 
-        // проверка на воЗможность снять нужную сумму с 1-го кошелька
+        // проверка на возможность снять нужную сумму с 1-го кошелька
         Wallet walletFrom = services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyIdFrom);
         if (walletFrom.getCount() < countFrom) {
-            return exceptionResponse();
+            return new BadResponse("not enough money on wallet").toString();
         }
 
         // переводим 1-ую валюту во 2-ую
@@ -114,7 +120,7 @@ public class BalanceController {
         // снимаем сумму с кошелька 1-ой валюты
         changeWalletBalance(walletFrom, -countFrom);
 
-        // кладём сумму на кошелёк 2-ой валюты (и соЗдаем его, если до этого не соЗдавался)
+        // кладём сумму на кошелёк 2-ой валюты (и создаем его, если до этого не создавался)
         Wallet walletTo = services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyIdTo);
         if (walletTo == null) {
             services.wallet.save(new Wallet(request.secret_key, currencyIdTo, countTo));
@@ -151,9 +157,5 @@ public class BalanceController {
 
         Currency currency = services.currency.getById(wallet.getCurrencyId());
         return "{ \"" + currency.getName() + "_wallet\": \"" + wallet.getCount() + "\"}";
-    }
-
-    private String exceptionResponse() {
-        return "{ \"response\": \"not enough money on wallet\"}";
     }
 }

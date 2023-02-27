@@ -2,16 +2,18 @@ package ru.relex.rozhnovL.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "wallets")
 //@IdClass(WalletId.class)
 
 @Getter
+@NoArgsConstructor
 public class Wallet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     //    @Id
@@ -29,9 +31,6 @@ public class Wallet {
         this.secretKey = secretKey;
         this.currencyId = currencyId;
         this.count = count;
-    }
-
-    public Wallet() {
     }
 
     public void setCount(Double value) {
