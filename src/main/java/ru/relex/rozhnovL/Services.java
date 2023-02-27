@@ -9,6 +9,8 @@ public class Services {
     @Autowired
     public CurseService curse;
     @Autowired
+    public TransactionService transaction;
+    @Autowired
     public UserService user;
     @Autowired
     public WalletService wallet;
@@ -16,10 +18,12 @@ public class Services {
     public Services(
             CurrencyService currency,
             CurseService curse,
+            TransactionService transaction,
             UserService user,
             WalletService wallet) {
         this.currency = currency;
         this.curse = curse;
+        this.transaction = transaction;
         this.user = user;
         this.wallet = wallet;
     }

@@ -7,6 +7,9 @@ import ru.relex.rozhnovL.entity.Currency;
 import ru.relex.rozhnovL.entity.Wallet;
 import ru.relex.rozhnovL.responses.BadResponse;
 
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @RestController
@@ -29,6 +32,6 @@ public class AdminController {
             sum += wallet.getCount();
         }
 
-        return "{ \"" + currencyName + "\": \"" + sum + "\"}";
+        return "{\n\"" + currencyName + "\": \"" + sum + "\"\n}";
     }
 }

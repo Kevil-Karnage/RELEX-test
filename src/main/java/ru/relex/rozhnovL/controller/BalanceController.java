@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.Currency;
 import ru.relex.rozhnovL.entity.Curse;
+import ru.relex.rozhnovL.entity.Transaction;
 import ru.relex.rozhnovL.entity.Wallet;
 import ru.relex.rozhnovL.requests.ExchangeCurrencyRequest;
 import ru.relex.rozhnovL.requests.TopUpRequest;
@@ -12,6 +13,7 @@ import ru.relex.rozhnovL.requests.WithdrawCardRequest;
 import ru.relex.rozhnovL.requests.WithdrawWalletRequest;
 import ru.relex.rozhnovL.responses.BadResponse;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -48,7 +50,14 @@ public class BalanceController {
             wallet = new Wallet(request.secret_key, services.currency.getByName("RUB").getId(), count);
         }
 
-        return changeWalletBalance(wallet, Double.parseDouble(request.RUB_wallet));
+        saveTransaction(
+                request.secret_key,
+                null,
+                services.currency.getByName("RUB").getId(),
+                count
+        );
+
+        return changeWalletBalance(wallet, count);
     }
 
     /**
@@ -66,6 +75,13 @@ public class BalanceController {
         if (wallet.getCount() < count) {
             return "{ \"response\": \"not enough money\"}";
         }
+
+        saveTransaction(
+                request.secret_key,
+                services.currency.getByName("RUB").getId(),
+                null,
+                count
+        );
 
         return changeWalletBalance(wallet, -count);
     }
@@ -87,6 +103,13 @@ public class BalanceController {
         if (wallet.getCount() < count) {
             return "{ \"response\": \"not enough money\"}";
         }
+
+        saveTransaction(
+                request.secret_key,
+                services.currency.getByName(request.currency).getId(),
+                null,
+                count
+        );
 
         return changeWalletBalance(wallet, -count);
     }
@@ -117,6 +140,9 @@ public class BalanceController {
             countTo = countFrom * curse.getCount();
         }
 
+        // сохраняем операцию
+        saveTransaction(request.secret_key, currencyIdFrom, currencyIdTo, countFrom);
+
         // снимаем сумму с кошелька 1-ой валюты
         changeWalletBalance(walletFrom, -countFrom);
 
@@ -131,6 +157,11 @@ public class BalanceController {
     }
 
 
+
+    private void saveTransaction(String secretKey, Long currencyFromId, Long currencyToId, Double count) {
+        Transaction transaction = new Transaction(new Date(), secretKey, currencyFromId, currencyToId, count);
+        services.transaction.save(transaction);
+    }
 
     private String walletsToString(List<Wallet> wallets) {
         StringBuilder sb = new StringBuilder();

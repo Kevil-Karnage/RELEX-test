@@ -12,6 +12,7 @@ public class ServicesConfiguration {
         return new Services(
                 new CurrencyServiceImpl(),
                 new CurseServiceImpl(),
+                new TransactionServiceImpl(),
                 new UserServiceImpl(),
                 new WalletServiceImpl()
         );
