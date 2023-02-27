@@ -15,6 +15,11 @@ public class CurseServiceImpl implements CurseService {
     CurseRepository repository;
 
     @Override
+    public Curse save(Curse curse) {
+        return repository.saveAndFlush(curse);
+    }
+
+    @Override
     public List<Curse> getByCurrencyId(long currencyId) {
         return repository.getByCurrencyId(currencyId);
     }

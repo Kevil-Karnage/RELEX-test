@@ -22,4 +22,7 @@ public class Curse {
     @Column(name = "count", nullable = false)
     Double count;
 
+    public void setCount(Double count) {
+        this.count = count;
+    }
 }
