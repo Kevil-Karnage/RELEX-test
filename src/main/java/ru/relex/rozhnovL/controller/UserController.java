@@ -21,7 +21,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("/signUp")
+    @PostMapping("/sign-up")
     @ResponseStatus(HttpStatus.CREATED)
     public String signUp(@RequestBody RegistrationRequest request) {
         System.out.println("username: " + request.username + " email: " + request.email);
