@@ -2,12 +2,12 @@ package ru.relex.rozhnovL.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import generator.JsonGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.Curse;
 import ru.relex.rozhnovL.requests.ChangeCurseRequest;
-import ru.relex.rozhnovL.responses.BadResponse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,10 +45,10 @@ public class CurseController {
     public String changeCurses(@RequestBody String json) {
         ChangeCurseRequest request = parseJsonToChangeCurseRequest(json);
         if (request == null)
-            return new BadResponse("bad request").toString();
+            return JsonGenerator.generateBadResponse("bad request");
 
         if (!services.user.getBySecretKey(request.secret_key).isAdmin())
-            return new BadResponse("Access denied").toString();
+            return JsonGenerator.generateBadResponse("Access denied");
 
         List<Curse> curses = new ArrayList<>();
         Long baseCurrencyId = services.currency.getByName(request.base_currency).getId();

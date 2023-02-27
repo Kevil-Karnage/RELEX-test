@@ -1,5 +1,6 @@
 package ru.relex.rozhnovL.controller;
 
+import generator.JsonGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.relex.rozhnovL.Services;
@@ -11,7 +12,6 @@ import ru.relex.rozhnovL.requests.ExchangeCurrencyRequest;
 import ru.relex.rozhnovL.requests.TopUpRequest;
 import ru.relex.rozhnovL.requests.WithdrawCardRequest;
 import ru.relex.rozhnovL.requests.WithdrawWalletRequest;
-import ru.relex.rozhnovL.responses.BadResponse;
 
 import java.util.Date;
 import java.util.List;
@@ -32,7 +32,7 @@ public class BalanceController {
     public String getBalance(@RequestParam(name = "secretKey") String secretKey) {
         List<Wallet> wallets = services.wallet.getAllBySecretKey(secretKey);
 
-        return walletsToString(wallets);
+        return walletsListToString(wallets);
     }
 
     /**
@@ -61,7 +61,7 @@ public class BalanceController {
     }
 
     /**
-     * (USER) Balance Withdraw Card
+     * (USER) Balance Withdraw Credit Card
      * @param request
      * @return
      */
@@ -73,7 +73,7 @@ public class BalanceController {
         double count = Double.parseDouble(request.count);
 
         if (wallet.getCount() < count) {
-            return "{ \"response\": \"not enough money\"}";
+            return JsonGenerator.generateBadResponse("Not enough money");
         }
 
         saveTransaction(
@@ -128,7 +128,7 @@ public class BalanceController {
         // проверка на возможность снять нужную сумму с 1-го кошелька
         Wallet walletFrom = services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyIdFrom);
         if (walletFrom.getCount() < countFrom) {
-            return new BadResponse("not enough money on wallet").toString();
+            return JsonGenerator.generateBadResponse("not enough money on wallet");
         }
 
         // переводим 1-ую валюту во 2-ую
@@ -163,23 +163,20 @@ public class BalanceController {
         services.transaction.save(transaction);
     }
 
-    private String walletsToString(List<Wallet> wallets) {
+    private String walletsListToString(List<Wallet> wallets) {
         StringBuilder sb = new StringBuilder();
-        sb.append('{');
-        sb.append('\n');
-        for (int i = 0; i < wallets.size(); i++) {
-            Currency currency = services.currency.getById(wallets.get(i).getCurrencyId());
-            sb.append('"');
-            sb.append(currency.getName());
-            sb.append("_wallet\": ");
-            sb.append('"');
-            sb.append(wallets.get(i).getCount());
-            sb.append('"');
-            sb.append('\n');
-        }
-        sb.append('}');
 
-        return sb.toString();
+        for (Wallet w: wallets) {
+            sb.append(String.format(
+                    JsonGenerator.jsonParamFormat,
+                    services.currency.getById(w.getCurrencyId()).getName(),
+                    w.getCount()
+            ));
+        }
+
+        sb.deleteCharAt(sb.length() - 1);
+
+        return String.format(JsonGenerator.jsonShellFormat, sb);
     }
 
     private String changeWalletBalance(Wallet wallet, double count) {
@@ -187,6 +184,6 @@ public class BalanceController {
         services.wallet.save(wallet);
 
         Currency currency = services.currency.getById(wallet.getCurrencyId());
-        return "{ \"" + currency.getName() + "_wallet\": \"" + wallet.getCount() + "\"}";
+        return JsonGenerator.generateJsonResponse(currency.getName() + "_wallet", wallet.getCount().toString());
     }
 }

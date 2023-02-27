@@ -1,6 +1,6 @@
 package ru.relex.rozhnovL.controller;
 
-import generator.Generator;
+import generator.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +25,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public String signUp(@RequestBody RegistrationRequest request) {
         System.out.println("username: " + request.username + " email: " + request.email);
-        String secretKey = Generator.generateSecretKey(request.username, request.email);
+        String secretKey = SecretKeyGenerator.generateSecretKey(request.username, request.email);
 
         User newUser = new User(request.username, request.email, secretKey, false);
         services.user.save(newUser);
-        return "{ \"secret_key\": \"" + secretKey + "\"}";
+        return JsonGenerator.generateJsonResponse("secret_key", secretKey);
     }
 }
