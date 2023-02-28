@@ -2,8 +2,10 @@ package ru.relex.rozhnovL.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import generator.JsonGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.Curse;
@@ -27,13 +29,13 @@ public class CurseController {
      * @param currency
      * @return
      */
-    @GetMapping("")
-    public String checkCurse(@RequestParam(name = "secret_key") String secretKey,
-                             @RequestParam(name = "currency") String currency) {
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> checkCurse(@RequestParam(name = "secret_key") String secretKey,
+                                        @RequestParam(name = "currency") String currency) {
         Long currencyId = services.currency.getByName(currency).getId();
         List<Curse> curses = services.curse.getByCurrencyId(currencyId);
 
-        return cursesToString(curses, currencyId);
+        return new ResponseEntity<>(cursesToString(curses, currencyId), HttpStatus.OK);
     }
 
     /**
@@ -41,14 +43,14 @@ public class CurseController {
      * @param json
      * @return
      */
-    @PostMapping("/change")
-    public String changeCurses(@RequestBody String json) {
+    @PostMapping(value = "/change", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> changeCurses(@RequestBody String json) {
         ChangeCurseRequest request = parseJsonToChangeCurseRequest(json);
         if (request == null)
-            return JsonGenerator.generateBadResponse("bad request");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
         if (!services.user.getBySecretKey(request.secret_key).isAdmin())
-            return JsonGenerator.generateBadResponse("Access denied");
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
         List<Curse> curses = new ArrayList<>();
         Long baseCurrencyId = services.currency.getByName(request.base_currency).getId();
@@ -63,7 +65,7 @@ public class CurseController {
             curses.add(curse);
         }
 
-        return cursesToString(curses, baseCurrencyId);
+        return new ResponseEntity<>(cursesToString(curses, baseCurrencyId), HttpStatus.OK);
     }
 
 
@@ -89,27 +91,22 @@ public class CurseController {
         return request;
     }
 
-    private String cursesToString(List<Curse> curses, long currencyId) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\n");
+    private Map<String, String> cursesToString(List<Curse> curses, long currencyId) {
+        Map<String, String> map = new HashMap<>();
 
         for (Curse curse : curses) {
-            long otherCurrencyId;
-            if (curse.getCurrencyIdTo().equals(currencyId))
-                otherCurrencyId = curse.getCurrencyIdFrom();
-            else
-                otherCurrencyId = curse.getCurrencyIdTo();
-
-
-            sb.append('"');
-            sb.append(services.currency.getById(otherCurrencyId).getName());
-            sb.append("\": \"");
-            sb.append(checkCorrectCurseCount(curse, currencyId));
-            sb.append("\",\n");
+            if (curse.getCurrencyIdFrom().equals(currencyId)) {
+                String currencyName = services.currency.getById(curse.getCurrencyIdTo()).getName();
+                map.put(currencyName, "" + curse.getCount());
+            } else {
+                String currencyName = services.currency.getById(curse.getCurrencyIdFrom()).getName();
+                map.put(currencyName, "" + 1.0 / curse.getCount());
+            }
         }
-        sb.append('}');
-        return sb.toString();
+
+        return map;
     }
+
 
     private Double checkCorrectCurseCount(Curse curse, long currencyId) {
         if (curse.getCurrencyIdFrom().equals(currencyId))
