@@ -8,10 +8,10 @@ import ru.relex.rozhnovL.entity.Currency;
 import ru.relex.rozhnovL.entity.Curse;
 import ru.relex.rozhnovL.entity.Transaction;
 import ru.relex.rozhnovL.entity.Wallet;
-import ru.relex.rozhnovL.requests.ExchangeCurrencyRequest;
-import ru.relex.rozhnovL.requests.TopUpRequest;
-import ru.relex.rozhnovL.requests.WithdrawCardRequest;
-import ru.relex.rozhnovL.requests.WithdrawWalletRequest;
+import ru.relex.rozhnovL.request.ExchangeCurrencyRequest;
+import ru.relex.rozhnovL.request.TopUpRequest;
+import ru.relex.rozhnovL.request.WithdrawCardRequest;
+import ru.relex.rozhnovL.request.WithdrawWalletRequest;
 
 import java.util.Date;
 import java.util.List;

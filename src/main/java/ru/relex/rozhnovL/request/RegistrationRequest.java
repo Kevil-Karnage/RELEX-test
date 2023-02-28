@@ -1,4 +1,4 @@
-package ru.relex.rozhnovL.requests;
+package ru.relex.rozhnovL.request;
 
 public class RegistrationRequest {
     public String username;

@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.Curse;
-import ru.relex.rozhnovL.requests.ChangeCurseRequest;
+import ru.relex.rozhnovL.request.ChangeCurseRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;

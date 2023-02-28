@@ -4,7 +4,7 @@ import generator.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.relex.rozhnovL.requests.*;
+import ru.relex.rozhnovL.request.*;
 import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.User;
 

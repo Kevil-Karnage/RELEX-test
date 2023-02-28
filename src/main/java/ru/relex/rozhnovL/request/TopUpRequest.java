@@ -1,4 +1,4 @@
-package ru.relex.rozhnovL.requests;
+package ru.relex.rozhnovL.request;
 
 public class TopUpRequest {
     public String secret_key;
