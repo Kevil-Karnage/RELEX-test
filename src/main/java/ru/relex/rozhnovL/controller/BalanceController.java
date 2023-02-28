@@ -1,7 +1,9 @@
 package ru.relex.rozhnovL.controller;
 
-import generator.JsonGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.Currency;
@@ -12,9 +14,14 @@ import ru.relex.rozhnovL.request.ExchangeCurrencyRequest;
 import ru.relex.rozhnovL.request.TopUpRequest;
 import ru.relex.rozhnovL.request.WithdrawCardRequest;
 import ru.relex.rozhnovL.request.WithdrawWalletRequest;
+import ru.relex.rozhnovL.response.BalanceExchangeResponse;
+import ru.relex.rozhnovL.response.BalanceTopUpResponse;
+import ru.relex.rozhnovL.response.BalanceWithdrawCardResponse;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/balance")
@@ -28,11 +35,11 @@ public class BalanceController {
      * @param secretKey
      * @return
      */
-    @GetMapping("")
-    public String getBalance(@RequestParam(name = "secretKey") String secretKey) {
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getBalance(@RequestParam(name = "secret_key") String secretKey) {
         List<Wallet> wallets = services.wallet.getAllBySecretKey(secretKey);
 
-        return walletsListToString(wallets);
+        return new ResponseEntity<>(walletsListToString(wallets), HttpStatus.OK);
     }
 
     /**
@@ -40,8 +47,8 @@ public class BalanceController {
      * @param request
      * @return
      */
-    @PostMapping("/top-up")
-    public String topUp(@RequestBody TopUpRequest request) {
+    @PostMapping(value = "/top-up", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> topUp(@RequestBody TopUpRequest request) {
         System.out.println(request);
         Wallet wallet = services.wallet.getMainBySecretKey(request.secret_key);
         double count = Double.parseDouble(request.RUB_wallet);
@@ -57,7 +64,10 @@ public class BalanceController {
                 count
         );
 
-        return changeWalletBalance(wallet, count);
+        wallet.setCount(wallet.getCount() + count);
+        services.wallet.save(wallet);
+
+        return new ResponseEntity<>(new BalanceTopUpResponse("" + count), HttpStatus.OK);
     }
 
     /**
@@ -65,15 +75,15 @@ public class BalanceController {
      * @param request
      * @return
      */
-    @PostMapping("/withdraw/card")
-    public String withdraw(@RequestBody WithdrawCardRequest request) {
+    @PostMapping(value = "/withdraw/card", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> withdraw(@RequestBody WithdrawCardRequest request) {
         System.out.println("Снятие средств на карту");
 
         Wallet wallet = services.wallet.getMainBySecretKey(request.secret_key);
         double count = Double.parseDouble(request.count);
 
         if (wallet.getCount() < count) {
-            return JsonGenerator.generateBadResponse("Not enough money");
+            return new ResponseEntity<>("Not enough money", HttpStatus.CONFLICT);
         }
 
         saveTransaction(
@@ -83,7 +93,12 @@ public class BalanceController {
                 count
         );
 
-        return changeWalletBalance(wallet, -count);
+        wallet.setCount(wallet.getCount() + count);
+        services.wallet.save(wallet);
+
+        return new ResponseEntity<>(
+                new BalanceWithdrawCardResponse(String.valueOf(wallet.getCount())),
+                HttpStatus.OK);
     }
 
     /**
@@ -91,8 +106,8 @@ public class BalanceController {
      * @param request
      * @return
      */
-    @PostMapping("/withdraw/wallet")
-    public String withdraw(@RequestBody WithdrawWalletRequest request) {
+    @PostMapping(value = "/withdraw/wallet", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> withdraw(@RequestBody WithdrawWalletRequest request) {
         System.out.println("Снятие средств на кошелёк");
         Long currencyId = services.currency.getByName(request.currency).getId();
 
@@ -100,9 +115,8 @@ public class BalanceController {
                 services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyId);
         double count = Double.parseDouble(request.count);
 
-        if (wallet.getCount() < count) {
-            return "{ \"response\": \"not enough money\"}";
-        }
+        if (wallet.getCount() < count)
+            return new ResponseEntity<>("Not enough money", HttpStatus.CONFLICT);
 
         saveTransaction(
                 request.secret_key,
@@ -111,7 +125,13 @@ public class BalanceController {
                 count
         );
 
-        return changeWalletBalance(wallet, -count);
+        wallet.setCount(wallet.getCount() + count);
+        services.wallet.save(wallet);
+
+        Currency currency = services.currency.getById(wallet.getCurrencyId());
+        Map<String, String> map = new HashMap<>();
+        map.put(currency.getName() + "_wallet", "" + wallet.getCount());
+        return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
     /**
@@ -119,17 +139,16 @@ public class BalanceController {
      * @param request
      * @return
      */
-    @PostMapping("/exchange")
-    public String exchange(@RequestBody ExchangeCurrencyRequest request) {
+    @PostMapping(value = "/exchange", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> exchange(@RequestBody ExchangeCurrencyRequest request) {
         Long currencyIdFrom = services.currency.getByName(request.currency_from).getId();
         Long currencyIdTo = services.currency.getByName(request.currency_to).getId();
         Double countFrom = Double.parseDouble(request.amount);
 
         // проверка на возможность снять нужную сумму с 1-го кошелька
         Wallet walletFrom = services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyIdFrom);
-        if (walletFrom.getCount() < countFrom) {
-            return JsonGenerator.generateBadResponse("not enough money on wallet");
-        }
+        if (walletFrom.getCount() < countFrom)
+            return new ResponseEntity<>("Not enough money", HttpStatus.CONFLICT);
 
         // переводим 1-ую валюту во 2-ую
         Curse curse = services.curse.getByCurrenciesIds(currencyIdFrom, currencyIdTo);
@@ -143,17 +162,29 @@ public class BalanceController {
         // сохраняем операцию
         saveTransaction(request.secret_key, currencyIdFrom, currencyIdTo, countFrom);
 
-        // снимаем сумму с кошелька 1-ой валюты
-        changeWalletBalance(walletFrom, -countFrom);
+        // снимаем средства с кошелька 1-ой валюты и получаем его баланс после снятия
+        walletFrom.setCount(walletFrom.getCount() + countFrom);
+        services.wallet.save(walletFrom);
 
-        // кладём сумму на кошелёк 2-ой валюты (и создаем его, если до этого не создавался)
+        // получаем кошелёк 2-ой валюты (и создаем его, если до этого не создавался)
         Wallet walletTo = services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyIdTo);
         if (walletTo == null) {
-            services.wallet.save(new Wallet(request.secret_key, currencyIdTo, countTo));
-            return "{ \"" + request.currency_to + "_wallet\": \"" + countTo + "\"}";
-        } else {
-            return changeWalletBalance(walletTo, countTo);
+            walletTo = services.wallet.save(new Wallet(request.secret_key, currencyIdTo, countTo));
         }
+
+        // пополняем кошелёк 2-ой валюты и получаем его баланс после пополнения
+        walletTo.setCount(walletTo.getCount() + countTo);
+        services.wallet.save(walletTo);
+
+        return new ResponseEntity<>(
+                new BalanceExchangeResponse(
+                        request.currency_from,
+                        request.currency_to,
+                        String.valueOf(walletFrom.getCount()),
+                        String.valueOf(walletTo.getCount())
+                ),
+                HttpStatus.OK
+        );
     }
 
 
@@ -163,27 +194,12 @@ public class BalanceController {
         services.transaction.save(transaction);
     }
 
-    private String walletsListToString(List<Wallet> wallets) {
-        StringBuilder sb = new StringBuilder();
-
+    private Map<String, String> walletsListToString(List<Wallet> wallets) {
+        Map<String, String> map = new HashMap<>();
         for (Wallet w: wallets) {
-            sb.append(String.format(
-                    JsonGenerator.jsonParamFormat,
-                    services.currency.getById(w.getCurrencyId()).getName(),
-                    w.getCount()
-            ));
+            map.put(services.currency.getById(w.getCurrencyId()).getName(), "" + w.getCount());
         }
 
-        sb.deleteCharAt(sb.length() - 1);
-
-        return String.format(JsonGenerator.jsonShellFormat, sb);
-    }
-
-    private String changeWalletBalance(Wallet wallet, double count) {
-        wallet.setCount(wallet.getCount() + count);
-        services.wallet.save(wallet);
-
-        Currency currency = services.currency.getById(wallet.getCurrencyId());
-        return JsonGenerator.generateJsonResponse(currency.getName() + "_wallet", wallet.getCount().toString());
+        return map;
     }
 }
