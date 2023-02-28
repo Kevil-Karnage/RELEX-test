@@ -1,16 +1,21 @@
 package ru.relex.rozhnovL.controller;
 
-import generator.JsonGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.Currency;
 import ru.relex.rozhnovL.entity.Wallet;
+import ru.relex.rozhnovL.response.CountTransactionsResponse;
 
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class AdminController {
@@ -18,12 +23,12 @@ public class AdminController {
     @Autowired
     Services services;
 
-    @GetMapping("/wallets/sum")
-    public String sumAll(@RequestParam(name = "secret_key") String secretKey,
-                         @RequestParam(name = "currency") String currencyName) {
+    @GetMapping(value = "/wallets/sum", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> sumAll(@RequestParam(name = "secret_key") String secretKey,
+                                 @RequestParam(name = "currency") String currencyName) {
         // check user access
         if (!services.user.getBySecretKey(secretKey).isAdmin())
-            return JsonGenerator.generateBadResponse("Access denied");
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
         Currency currency = services.currency.getByName(currencyName);
         List<Wallet> wallets = services.wallet.getAllByCurrencyId(currency.getId());
@@ -33,16 +38,18 @@ public class AdminController {
             sum += wallet.getCount();
         }
 
-        return JsonGenerator.generateJsonResponse(currencyName, "" + sum);
+        Map<String, String> map = new HashMap<>();
+        map.put(currencyName, String.valueOf(sum));
+        return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
-    @GetMapping("/transactions/count")
-    public String getCountTransactions(@RequestParam(name = "secret_key") String secretKey,
+    @GetMapping(value = "/transactions/count", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCountTransactions(@RequestParam(name = "secret_key") String secretKey,
                                        @RequestParam(name = "date_from") String stringDateFrom,
                                        @RequestParam(name = "date_to") String stringDateTo) {
         // check user access
         if (!services.user.getBySecretKey(secretKey).isAdmin())
-            return JsonGenerator.generateBadResponse("Access denied");
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
         Date dateFrom;
         Date dateTo;
@@ -57,6 +64,6 @@ public class AdminController {
 
         int count = services.transaction.getCountBetweenDates(dateFrom, dateTo);
 
-        return JsonGenerator.generateJsonResponse("transaction_count", "" + count);
+        return new ResponseEntity<>(new CountTransactionsResponse(String.valueOf(count)), HttpStatus.OK);
     }
 }
