@@ -30,7 +30,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> signUp(@RequestBody RegistrationRequest request) {
 
-        if (!Pattern.matches("[A-Za-z\\d.]+@[A-Za-z\\d.]", request.email)) {
+        if (!Pattern.matches("[A-Za-z\\d.]+@[A-Za-z\\d.]+", request.email)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
