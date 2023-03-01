@@ -36,6 +36,10 @@ public class BalanceController {
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getBalance(@RequestParam(name = "secret_key") String secretKey) {
+        if (services.user.getBySecretKey(secretKey).isAdmin()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         List<Wallet> wallets = services.wallet.getAllBySecretKey(secretKey);
 
         return new ResponseEntity<>(walletsListToString(wallets), HttpStatus.OK);
@@ -77,6 +81,11 @@ public class BalanceController {
      */
     @PostMapping(value = "/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> withdraw(@RequestBody WithdrawRequest request) {
+        if (services.user.getBySecretKey(request.secret_key).isAdmin()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+
         System.out.println("Снятие средств");
         Long currencyId = services.currency.getByName(request.currency).getId();
 
@@ -113,6 +122,10 @@ public class BalanceController {
      */
     @PostMapping(value = "/exchange", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> exchange(@RequestBody ExchangeCurrencyRequest request) {
+        if (services.user.getBySecretKey(request.secret_key).isAdmin()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         Long currencyIdFrom = services.currency.getByName(request.currency_from).getId();
         Long currencyIdTo = services.currency.getByName(request.currency_to).getId();
         Double countFrom = Double.parseDouble(request.amount);
