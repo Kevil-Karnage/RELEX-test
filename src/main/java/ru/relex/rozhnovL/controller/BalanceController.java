@@ -67,7 +67,6 @@ public class BalanceController {
                 count
         );
 
-        wallet.setCount(wallet.getCount() + count);
         services.wallet.save(wallet);
 
         return new ResponseEntity<>(new BalanceTopUpResponse("" + count), HttpStatus.OK);
@@ -106,7 +105,7 @@ public class BalanceController {
                 count
         );
 
-        wallet.setCount(wallet.getCount() + count);
+        wallet.setCount(wallet.getCount() - count);
         services.wallet.save(wallet);
 
         Currency currency = services.currency.getById(wallet.getCurrencyId());
@@ -148,7 +147,7 @@ public class BalanceController {
         saveTransaction(request.secret_key, currencyIdFrom, currencyIdTo, countFrom);
 
         // снимаем средства с кошелька 1-ой валюты и получаем его баланс после снятия
-        walletFrom.setCount(walletFrom.getCount() + countFrom);
+        walletFrom.setCount(walletFrom.getCount() - countFrom);
         services.wallet.save(walletFrom);
 
         // получаем кошелёк 2-ой валюты (и создаем его, если до этого не создавался)
