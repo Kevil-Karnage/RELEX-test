@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/balance")
@@ -81,6 +82,10 @@ public class BalanceController {
 
         Wallet wallet = services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyId);
         double count = Double.parseDouble(request.count);
+
+        if (!isCorrectWithdrawRequest(request)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         if (wallet.getCount() < count)
             return new ResponseEntity<>("Not enough money", HttpStatus.CONFLICT);
@@ -155,6 +160,22 @@ public class BalanceController {
     }
 
 
+
+    private boolean isCorrectWithdrawRequest(WithdrawRequest request) {
+        if (Pattern.matches("\\d{4}-\\d{4}-\\d{4}-\\d{4}", request.to)) {
+            if (!request.currency.equals("RUB")) {
+                return false;
+            }
+        } else if (Pattern.matches("[A-Za-z\\d]+", request.to)) {
+            if (request.currency.equals("RUB")) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
 
     private void saveTransaction(String secretKey, Long currencyFromId, Long currencyToId, Double count) {
         Transaction transaction = new Transaction(new Date(), secretKey, currencyFromId, currencyToId, count);

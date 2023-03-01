@@ -11,6 +11,8 @@ import ru.relex.rozhnovL.Services;
 import ru.relex.rozhnovL.entity.User;
 import ru.relex.rozhnovL.response.SignUpResponse;
 
+import java.util.regex.Pattern;
+
 
 @RestController
 public class UserController {
@@ -27,6 +29,11 @@ public class UserController {
     @PostMapping(value = "/sign-up", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> signUp(@RequestBody RegistrationRequest request) {
+
+        if (!Pattern.matches("[A-Za-z\\d.]+@[A-Za-z\\d.]", request.email)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         System.out.println("username: " + request.username + " email: " + request.email);
         String secretKey = SecretKeyGenerator.generateSecretKey(request.username, request.email);
 
