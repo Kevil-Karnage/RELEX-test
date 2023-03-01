@@ -64,6 +64,6 @@ public class AdminController {
 
         int count = services.transaction.getCountBetweenDates(dateFrom, dateTo);
 
-        return new ResponseEntity<>(new CountTransactionsResponse(String.format(services.doubleFormat, count)), HttpStatus.OK);
+        return new ResponseEntity<>(new CountTransactionsResponse("" + count), HttpStatus.OK);
     }
 }
