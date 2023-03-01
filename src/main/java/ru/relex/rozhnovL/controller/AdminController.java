@@ -28,7 +28,7 @@ public class AdminController {
                                  @RequestParam(name = "currency") String currencyName) {
         // check user access
         if (!services.user.getBySecretKey(secretKey).isAdmin())
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Currency currency = services.currency.getByName(currencyName);
         List<Wallet> wallets = services.wallet.getAllByCurrencyId(currency.getId());
@@ -49,7 +49,7 @@ public class AdminController {
                                        @RequestParam(name = "date_to") String stringDateTo) {
         // check user access
         if (!services.user.getBySecretKey(secretKey).isAdmin())
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Date dateFrom;
         Date dateTo;

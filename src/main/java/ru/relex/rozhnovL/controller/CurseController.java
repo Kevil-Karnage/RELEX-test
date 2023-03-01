@@ -50,10 +50,11 @@ public class CurseController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
         if (!services.user.getBySecretKey(request.secret_key).isAdmin())
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         List<Curse> curses = new ArrayList<>();
         Long baseCurrencyId = services.currency.getByName(request.base_currency).getId();
+
         for (String key: request.other_currencies.keySet()) {
             Long currencyId = services.currency.getByName(key).getId();
             Curse curse = services.curse.getByCurrenciesIds(baseCurrencyId, currencyId);
