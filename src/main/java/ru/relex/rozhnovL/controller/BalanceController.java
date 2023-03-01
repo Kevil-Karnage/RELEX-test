@@ -12,11 +12,9 @@ import ru.relex.rozhnovL.entity.Transaction;
 import ru.relex.rozhnovL.entity.Wallet;
 import ru.relex.rozhnovL.request.ExchangeCurrencyRequest;
 import ru.relex.rozhnovL.request.TopUpRequest;
-import ru.relex.rozhnovL.request.WithdrawCardRequest;
-import ru.relex.rozhnovL.request.WithdrawWalletRequest;
+import ru.relex.rozhnovL.request.WithdrawRequest;
 import ru.relex.rozhnovL.response.BalanceExchangeResponse;
 import ru.relex.rozhnovL.response.BalanceTopUpResponse;
-import ru.relex.rozhnovL.response.BalanceWithdrawCardResponse;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -70,49 +68,18 @@ public class BalanceController {
         return new ResponseEntity<>(new BalanceTopUpResponse("" + count), HttpStatus.OK);
     }
 
+
     /**
-     * (USER) Balance Withdraw Credit Card
+     * (USER) Balance Withdraw Wallet(or Card)
      * @param request
      * @return
      */
-    @PostMapping(value = "/withdraw/card", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> withdraw(@RequestBody WithdrawCardRequest request) {
-        System.out.println("Снятие средств на карту");
-
-        Wallet wallet = services.wallet.getMainBySecretKey(request.secret_key);
-        double count = Double.parseDouble(request.count);
-
-        if (wallet.getCount() < count) {
-            return new ResponseEntity<>("Not enough money", HttpStatus.CONFLICT);
-        }
-
-        saveTransaction(
-                request.secret_key,
-                services.currency.getByName("RUB").getId(),
-                null,
-                count
-        );
-
-        wallet.setCount(wallet.getCount() + count);
-        services.wallet.save(wallet);
-
-        return new ResponseEntity<>(
-                new BalanceWithdrawCardResponse(String.valueOf(wallet.getCount())),
-                HttpStatus.OK);
-    }
-
-    /**
-     * (USER) Balance Withdraw Wallet
-     * @param request
-     * @return
-     */
-    @PostMapping(value = "/withdraw/wallet", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> withdraw(@RequestBody WithdrawWalletRequest request) {
-        System.out.println("Снятие средств на кошелёк");
+    @PostMapping(value = "/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> withdraw(@RequestBody WithdrawRequest request) {
+        System.out.println("Снятие средств");
         Long currencyId = services.currency.getByName(request.currency).getId();
 
-        Wallet wallet =
-                services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyId);
+        Wallet wallet = services.wallet.getBySecretKeyAndCurrencyId(request.secret_key, currencyId);
         double count = Double.parseDouble(request.count);
 
         if (wallet.getCount() < count)
