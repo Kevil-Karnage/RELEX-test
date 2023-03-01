@@ -15,6 +15,8 @@ public class Services {
     @Autowired
     public WalletService wallet;
 
+    public String doubleFormat = "%.5f";
+
     public Services(
             CurrencyService currency,
             CurseService curse,

@@ -103,6 +103,8 @@ public class CurseController {
                 String currencyName = services.currency.getById(curse.getCurrencyIdFrom()).getName();
                 map.put(currencyName, "" + 1.0 / curse.getCount());
             }
+
+            map.put(currencyName, "" + String.format(services.doubleFormat, count));
         }
 
         return map;

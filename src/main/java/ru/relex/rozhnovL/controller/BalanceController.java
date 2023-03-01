@@ -97,7 +97,7 @@ public class BalanceController {
 
         Currency currency = services.currency.getById(wallet.getCurrencyId());
         Map<String, String> map = new HashMap<>();
-        map.put(currency.getName() + "_wallet", "" + wallet.getCount());
+        map.put(currency.getName() + "_wallet", String.format(services.doubleFormat, wallet.getCount()));
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
@@ -147,8 +147,8 @@ public class BalanceController {
                 new BalanceExchangeResponse(
                         request.currency_from,
                         request.currency_to,
-                        String.valueOf(walletFrom.getCount()),
-                        String.valueOf(walletTo.getCount())
+                        String.format(services.doubleFormat, walletFrom.getCount()),
+                        String.format(services.doubleFormat, walletTo.getCount())
                 ),
                 HttpStatus.OK
         );
@@ -164,7 +164,7 @@ public class BalanceController {
     private Map<String, String> walletsListToString(List<Wallet> wallets) {
         Map<String, String> map = new HashMap<>();
         for (Wallet w: wallets) {
-            map.put(services.currency.getById(w.getCurrencyId()).getName(), "" + w.getCount());
+            map.put(services.currency.getById(w.getCurrencyId()).getName(), String.format(services.doubleFormat, w.getCount()));
         }
 
         return map;
