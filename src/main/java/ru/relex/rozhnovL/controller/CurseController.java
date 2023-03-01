@@ -59,7 +59,7 @@ public class CurseController {
             Long currencyId = services.currency.getByName(key).getId();
             Curse curse = services.curse.getByCurrenciesIds(baseCurrencyId, currencyId);
 
-            double count = checkCorrectCurseCount(curse, baseCurrencyId);
+            double count = checkCorrectCurseCount(curse, baseCurrencyId, request.other_currencies.get(key));
             curse.setCount(count);
 
             services.curse.save(curse);
@@ -96,12 +96,15 @@ public class CurseController {
         Map<String, String> map = new HashMap<>();
 
         for (Curse curse : curses) {
+            String currencyName;
+            Double count;
+
             if (curse.getCurrencyIdFrom().equals(currencyId)) {
-                String currencyName = services.currency.getById(curse.getCurrencyIdTo()).getName();
-                map.put(currencyName, "" + curse.getCount());
+                currencyName = services.currency.getById(curse.getCurrencyIdTo()).getName();
+                count = curse.getCount();
             } else {
-                String currencyName = services.currency.getById(curse.getCurrencyIdFrom()).getName();
-                map.put(currencyName, "" + 1.0 / curse.getCount());
+                currencyName = services.currency.getById(curse.getCurrencyIdFrom()).getName();
+                count = 1 / curse.getCount();
             }
 
             map.put(currencyName, "" + String.format(services.doubleFormat, count));
@@ -111,10 +114,10 @@ public class CurseController {
     }
 
 
-    private Double checkCorrectCurseCount(Curse curse, long currencyId) {
+    private Double checkCorrectCurseCount(Curse curse, long currencyId, double count) {
         if (curse.getCurrencyIdFrom().equals(currencyId))
-            return curse.getCount();
+            return count;
 
-        return 1.0 / curse.getCount();
+        return 1.0 / count;
     }
 }
